@@ -1,0 +1,528 @@
+<!--
+  ⚠️ AFFILIATE LINK PLACEHOLDERS
+  All href="https://www.habito.com/" and href="https://www.landc.co.uk/" links
+  below are PLACEHOLDERS. Before going live, replace each with the actual
+  Awin tracking URL from your Awin publisher dashboard.
+  Format will be: https://www.awin1.com/cread.php?awinmid=XXXXX&awinaffid=YOUR_ID
+  Without this fix, NO commission will be tracked.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stamp Duty Calculator 2026 — Accurate SDLT for England & Northern Ireland</title>
+  <meta name="description" content="Free stamp duty calculator for 2026. Covers first-time buyers, standard buyers, and additional properties. Instant band-by-band SDLT breakdown using HMRC rates." />
+  <meta name="keywords" content="stamp duty calculator 2026, SDLT calculator, stamp duty first time buyer 2026, stamp duty land tax, stamp duty calculator England" />
+  <link rel="canonical" href="https://www.firsthomeguide.co.uk/stamp-duty-calculator.html" />
+
+  <!-- Schema: HowTo for rich results -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Stamp Duty Calculator 2026",
+    "description": "Free, accurate stamp duty (SDLT) calculator for England and Northern Ireland, using 2026 HMRC rates.",
+    "url": "https://www.firsthomeguide.co.uk/stamp-duty-calculator.html",
+    "applicationCategory": "FinanceApplication",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "GBP" },
+    "featureList": ["First-time buyer relief", "Additional property surcharge", "Non-resident surcharge", "Band-by-band breakdown"]
+  }
+  </script>
+
+  <!-- FAQ Schema for rich results -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How much stamp duty do first-time buyers pay in 2026?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In 2026, first-time buyers in England pay no stamp duty on properties up to £300,000. On properties between £300,001 and £500,000, they pay 5% on the portion above £300,000. Properties above £500,000 do not qualify for first-time buyer relief and standard rates apply."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "When did stamp duty rates change?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Stamp duty rates changed on 1 April 2025. The nil-rate threshold returned to £125,000 (from the temporary £250,000), and the first-time buyer relief threshold dropped from £425,000 to £300,000. No further changes have been announced for 2026."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I pay stamp duty on a second home?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Buyers of additional residential properties (second homes, buy-to-let) pay a 5% surcharge on top of standard SDLT rates. This surcharge applies from the first pound of the purchase price."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ── Navigation ─────────────────────────────────────────────────────── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">🏠 First Home Guide <span class="nav-logo-badge">Free</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="stamp-duty-calculator.html" style="color: var(--amber-light);">Stamp Duty Calculator</a></li>
+      <li><a href="first-time-buyer-guide.html">FTB Guide</a></li>
+      <li><a href="mortgage-deposit-guide.html">Deposit Guide</a></li>
+      <li><a href="stamp-duty-calculator.html" class="nav-cta btn btn-sm">Calculate Now</a></li>
+    </ul>
+    <button class="nav-mobile-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+  </div>
+</nav>
+
+<!-- ── Page Hero ───────────────────────────────────────────────────────── -->
+<section class="page-hero hero">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Updated · April 2025 HMRC Rates · England & Northern Ireland</p>
+    <h1>Stamp Duty Calculator 2026</h1>
+    <p class="hero-sub">Accurate, free, and instant. Covers first-time buyers, home movers, and additional properties with a full band-by-band breakdown.</p>
+  </div>
+</section>
+
+<!-- ── Calculator ──────────────────────────────────────────────────────── -->
+<section style="background: var(--cream); padding: 48px 24px;">
+  <div style="max-width: var(--max-w); margin: 0 auto;">
+    <div style="display: grid; grid-template-columns: 1fr 320px; gap: 40px;" id="calcLayout">
+
+      <!-- Main Calculator -->
+      <div>
+        <div class="calc-wrapper" style="max-width: 100%;">
+          <div class="calc-header">
+            <h2>Stamp Duty Land Tax (SDLT) Calculator</h2>
+            <p>England and Northern Ireland · 2026 · Official HMRC rates</p>
+          </div>
+          <div class="calc-body">
+
+            <!-- Price input -->
+            <div class="field-group" style="margin-bottom: 24px;">
+              <label class="field-label" for="price">Property purchase price</label>
+              <span class="field-hint">Enter the agreed price, not asking price</span>
+              <div class="input-prefix-wrap" style="margin-top: 8px;">
+                <input type="number" class="field-input price-input" id="price"
+                  placeholder="350,000" min="0" max="10000000" step="1000"
+                  oninput="runCalc()" aria-label="Property price in pounds" />
+              </div>
+            </div>
+
+            <!-- Buyer type -->
+            <div class="field-group" style="margin-bottom: 24px;">
+              <div class="field-label" style="margin-bottom: 8px;">Buyer type</div>
+              <div class="radio-group" id="buyer-type-group">
+                <label class="radio-option selected">
+                  <input type="radio" name="buyer" value="ftb" checked onchange="runCalc()" />
+                  <div>
+                    <div style="font-weight: 600;">First-time buyer</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-ui);">Never owned property anywhere in the world</div>
+                  </div>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="buyer" value="standard" onchange="runCalc()" />
+                  <div>
+                    <div style="font-weight: 600;">Standard buyer</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-ui);">Moving home or replacing main residence</div>
+                  </div>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="buyer" value="additional" onchange="runCalc()" />
+                  <div>
+                    <div style="font-weight: 600;">Additional property</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-ui);">Second home, buy-to-let, or rental property (+5% surcharge)</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Non-resident -->
+            <div class="field-group" style="margin-bottom: 28px;">
+              <label class="radio-option" style="border-style: dashed;">
+                <input type="checkbox" id="non-resident" onchange="runCalc()"
+                  style="accent-color: var(--navy); width: 16px; height: 16px;" />
+                <div>
+                  <div style="font-weight: 600; font-family: var(--font-ui); font-size: 0.9rem;">Non-UK resident buyer (+2% surcharge)</div>
+                  <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-ui);">Applies if you've spent fewer than 183 days in the UK in the year before purchase</div>
+                </div>
+              </label>
+            </div>
+
+            <!-- Results -->
+            <div id="result" class="calc-result">
+
+              <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+                <div>
+                  <div class="result-headline">Total stamp duty due</div>
+                  <div class="result-amount" id="result-total">£0 <small>SDLT</small></div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-family: var(--font-ui); font-size: 0.78rem; color: rgba(255,255,255,0.55); margin-bottom: 4px;">Effective rate</div>
+                  <div style="font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; color: var(--amber-light);" id="result-rate">0%</div>
+                </div>
+              </div>
+
+              <!-- Band breakdown table -->
+              <table class="breakdown-table" id="breakdown-table">
+                <thead>
+                  <tr>
+                    <th>Band</th>
+                    <th>Rate</th>
+                    <th>Taxable amount</th>
+                    <th>Tax due</th>
+                  </tr>
+                </thead>
+                <tbody id="breakdown-body"></tbody>
+              </table>
+
+              <!-- Insight message -->
+              <div class="result-insight" id="result-insight"></div>
+
+              <!-- Surcharge / relief info -->
+              <div id="result-extras" style="display: none; margin-bottom: 16px;"></div>
+
+              <!-- Actions -->
+              <div class="result-actions">
+                <a href="first-time-buyer-guide.html" class="btn btn-outline btn-sm">📖 FTB Guide</a>
+                <a href="mortgage-deposit-guide.html" class="btn btn-outline btn-sm">💰 Deposit Guide</a>
+                <a href="#broker-section" class="btn btn-primary btn-sm">🏦 Find a broker →</a>
+              </div>
+            </div>
+
+            <div id="calc-placeholder" style="text-align: center; padding: 28px 16px; font-family: var(--font-ui); color: var(--text-muted);">
+              <div style="font-size: 2rem; margin-bottom: 12px;">🧮</div>
+              <div style="font-weight: 600; margin-bottom: 6px;">Enter a price above</div>
+              <div style="font-size: 0.875rem;">Your stamp duty breakdown will appear here instantly</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Comparison tool -->
+        <div id="comparison-section" style="display: none; margin-top: 24px;">
+          <div class="card" style="border-top: 3px solid var(--amber);">
+            <h3 style="font-family: var(--font-display); color: var(--navy); margin-bottom: 16px;">Buyer type comparison</h3>
+            <p style="font-family: var(--font-ui); font-size: 0.875rem; color: var(--text-mid); margin-bottom: 16px;">How much would you pay under each buyer status?</p>
+            <div id="comparison-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;"></div>
+          </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div style="margin-top: 40px;">
+          <h2 style="font-family: var(--font-display); font-size: 1.6rem; color: var(--navy); margin-bottom: 24px; padding-bottom: 12px; border-bottom: 2px solid var(--cream-dark);">Stamp Duty 2026 — Frequently Asked Questions</h2>
+
+          <details class="card" style="margin-bottom: 12px; cursor: pointer;">
+            <summary style="font-family: var(--font-ui); font-weight: 700; color: var(--navy); font-size: 0.95rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+              How much stamp duty do first-time buyers pay in 2026?
+              <span style="color: var(--amber-dark); font-size: 1.2rem;">+</span>
+            </summary>
+            <div style="margin-top: 12px; font-family: var(--font-ui); font-size: 0.9rem; color: var(--text-mid); line-height: 1.6;">
+              <p>First-time buyers in England and Northern Ireland pay <strong>no stamp duty on properties up to £300,000</strong>. On properties between £300,001 and £500,000, they pay 5% on the portion above £300,000 only.</p>
+              <p style="margin-top: 8px;">If the property costs more than £500,000, first-time buyer relief does not apply and standard SDLT rates are used instead.</p>
+              <p style="margin-top: 8px;">Example: FTB buying at £350,000 pays 5% on £50,000 = <strong>£2,500 stamp duty</strong>.</p>
+            </div>
+          </details>
+
+          <details class="card" style="margin-bottom: 12px; cursor: pointer;">
+            <summary style="font-family: var(--font-ui); font-weight: 700; color: var(--navy); font-size: 0.95rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+              When did stamp duty rates change?
+              <span style="color: var(--amber-dark); font-size: 1.2rem;">+</span>
+            </summary>
+            <div style="margin-top: 12px; font-family: var(--font-ui); font-size: 0.9rem; color: var(--text-mid); line-height: 1.6;">
+              <p>The most recent change took effect on <strong>1 April 2025</strong>, when temporary reliefs introduced in September 2022 expired. Key changes:</p>
+              <ul style="margin: 8px 0 8px 20px;">
+                <li>Standard nil-rate threshold dropped from £250,000 back to £125,000</li>
+                <li>First-time buyer nil-rate threshold dropped from £425,000 to £300,000</li>
+                <li>Maximum price for FTB relief reduced from £625,000 to £500,000</li>
+              </ul>
+              <p>No further changes have been announced for 2026.</p>
+            </div>
+          </details>
+
+          <details class="card" style="margin-bottom: 12px; cursor: pointer;">
+            <summary style="font-family: var(--font-ui); font-weight: 700; color: var(--navy); font-size: 0.95rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+              What is the additional property surcharge?
+              <span style="color: var(--amber-dark); font-size: 1.2rem;">+</span>
+            </summary>
+            <div style="margin-top: 12px; font-family: var(--font-ui); font-size: 0.9rem; color: var(--text-mid); line-height: 1.6;">
+              <p>If you're buying a property and you'll own <strong>more than one residential property</strong>, you pay a 5% surcharge on top of standard SDLT rates. This applies from the first pound — there's no nil-rate band for additional properties.</p>
+              <p style="margin-top: 8px;">This surcharge was increased from 3% to 5% in October 2024. It applies to second homes, buy-to-let properties, and holiday homes.</p>
+              <p style="margin-top: 8px;">If you're replacing your main residence and sell your previous home within 36 months, you can reclaim the surcharge.</p>
+            </div>
+          </details>
+
+          <details class="card" style="margin-bottom: 12px; cursor: pointer;">
+            <summary style="font-family: var(--font-ui); font-weight: 700; color: var(--navy); font-size: 0.95rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+              When do I have to pay stamp duty?
+              <span style="color: var(--amber-dark); font-size: 1.2rem;">+</span>
+            </summary>
+            <div style="margin-top: 12px; font-family: var(--font-ui); font-size: 0.9rem; color: var(--text-mid); line-height: 1.6;">
+              <p>You must pay stamp duty and file an SDLT return within <strong>14 days of completion</strong> — the date you legally become the owner. Your solicitor or conveyancer typically handles this on your behalf as part of the conveyancing process.</p>
+              <p style="margin-top: 8px;">Late filing results in automatic penalties from HMRC, plus interest on any unpaid tax. Your solicitor should make this clear well before completion day.</p>
+            </div>
+          </details>
+
+          <details class="card" style="cursor: pointer;">
+            <summary style="font-family: var(--font-ui); font-weight: 700; color: var(--navy); font-size: 0.95rem; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+              Does stamp duty apply in Scotland and Wales?
+              <span style="color: var(--amber-dark); font-size: 1.2rem;">+</span>
+            </summary>
+            <div style="margin-top: 12px; font-family: var(--font-ui); font-size: 0.9rem; color: var(--text-mid); line-height: 1.6;">
+              <p>No. Scotland uses <strong>Land and Buildings Transaction Tax (LBTT)</strong>, administered by Revenue Scotland. Wales uses <strong>Land Transaction Tax (LTT)</strong>, administered by the Welsh Revenue Authority. Both have different thresholds and rates to SDLT.</p>
+              <p style="margin-top: 8px;">This calculator covers England and Northern Ireland only (SDLT).</p>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="sidebar" id="calcSidebar">
+
+        <div class="affiliate-cta">
+          <h4>Ready to speak to a broker?</h4>
+          <p>Get free, whole-of-market mortgage advice from an FCA-authorised broker. No fee, no obligation.</p>
+          <a href="https://www.habito.com/" target="_blank" rel="noopener sponsored" class="btn btn-primary btn-sm" style="width: 100%; justify-content: center; margin-bottom: 8px;">Try Habito — free →</a>
+          <a href="https://www.landc.co.uk/" target="_blank" rel="noopener sponsored" class="btn btn-outline btn-sm" style="width: 100%; justify-content: center;">L&C Mortgages →</a>
+          <div class="affiliate-disclaimer">Sponsored links. We may earn a commission at no cost to you.</div>
+        </div>
+
+        <div class="sidebar-card">
+          <h4>Quick cost guide</h4>
+          <a href="#" class="sidebar-link"><span>Conveyancing fees</span><span>→</span></a>
+          <a href="#" class="sidebar-link"><span>Survey costs</span><span>→</span></a>
+          <a href="mortgage-deposit-guide.html" class="sidebar-link"><span>Deposit calculator</span><span>→</span></a>
+          <a href="first-time-buyer-guide.html" class="sidebar-link"><span>FTB checklist</span><span>→</span></a>
+        </div>
+
+        <div class="sidebar-card">
+          <h4>Important reminder</h4>
+          <p style="font-family: var(--font-ui); font-size: 0.82rem; color: var(--text-mid); line-height: 1.55;">This calculator provides estimates only. Tax rules can change. Always confirm your SDLT liability with your solicitor or via the official <a href="https://www.gov.uk/stamp-duty-land-tax" target="_blank" rel="noopener" style="color: var(--navy); font-weight: 600;">HMRC SDLT calculator</a> before exchanging contracts.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Broker Section ──────────────────────────────────────────────────── -->
+<section id="broker-section" class="section" style="background: var(--white);">
+  <div class="container">
+    <div style="max-width: 700px; margin: 0 auto; text-align: center;">
+      <p class="section-label">Next step</p>
+      <h2 style="font-family: var(--font-display); font-size: 1.8rem; color: var(--navy); margin-bottom: 12px;">Find out how much you can borrow</h2>
+      <p style="font-family: var(--font-ui); color: var(--text-mid); margin-bottom: 36px;">Once you know your stamp duty, the next step is understanding your mortgage options. A fee-free broker searches the whole market — banks, building societies, and specialist lenders — to find the best rate for your situation.</p>
+
+      <div class="card-grid card-grid-2" style="text-align: left;">
+        <div class="card" style="border-top: 4px solid var(--navy);">
+          <div style="font-size: 2rem; margin-bottom: 10px;">🏦</div>
+          <h3 style="font-family: var(--font-display); font-size: 1.1rem; color: var(--navy); margin-bottom: 8px;">Habito</h3>
+          <p style="font-family: var(--font-ui); font-size: 0.875rem; color: var(--text-mid); line-height: 1.55; margin-bottom: 4px;">✓ Whole of market search</p>
+          <p style="font-family: var(--font-ui); font-size: 0.875rem; color: var(--text-mid); line-height: 1.55; margin-bottom: 4px;">✓ Online process — no branch visits</p>
+          <p style="font-family: var(--font-ui); font-size: 0.875rem; color: var(--text-mid); line-height: 1.55; margin-bottom: 16px;">✓ FCA authorised · No fee to you</p>
+          <a href="https://www.habito.com/" target="_blank" rel="noopener sponsored" class="btn btn-navy btn-sm">Get started free →</a>
+          <p style="font-family: var(--font-ui); font-size: 0.7rem; color: var(--text-muted); margin-top: 8px;">Sponsored · We may earn a referral commission</p>
+        </div>
+        <div class="card" style="border-top: 4px solid var(--amber);">
+          <div style="font-size: 2rem; margin-bottom: 10px;">🔍</div>
+          <h3 style="font-family: var(--font-display); font-size: 1.1rem; color: var(--navy); margin-bottom: 8px;">L&C Mortgages</h3>
+          <p style="font-family: var(--font-ui); font-size: 0.875rem; color: var(--text-mid); line-height: 1.55; margin-bottom: 4px;">✓ UK's largest fee-free broker</p>
+          <p style="font-family: var(--font-ui); font-size: 0.875rem; color: var(--text-mid); line-height: 1.55; margin-bottom: 4px;">✓ Award-winning service</p>
+          <p style="font-family: var(--font-ui); font-size: 0.875rem; color: var(--text-mid); line-height: 1.55; margin-bottom: 16px;">✓ FCA authorised · No fee to you</p>
+          <a href="https://www.landc.co.uk/" target="_blank" rel="noopener sponsored" class="btn btn-primary btn-sm">Compare rates →</a>
+          <p style="font-family: var(--font-ui); font-size: 0.7rem; color: var(--text-muted); margin-top: 8px;">Sponsored · We may earn a referral commission</p>
+        </div>
+      </div>
+
+      <div class="callout callout-info mt-24" style="text-align: left;">
+        <div class="callout-title">ℹ️ Why we recommend brokers, not direct lenders</div>
+        Going direct to a bank means you only see their products. A whole-of-market broker searches hundreds of deals simultaneously. For most buyers, this finds better rates and saves money over the life of the mortgage.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ──────────────────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h3>🏠 First Home Guide</h3>
+        <p>Free, independent guides and calculators for UK home buyers.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Tools</h4>
+        <ul>
+          <li><a href="stamp-duty-calculator.html">Stamp Duty Calculator</a></li>
+          <li><a href="mortgage-deposit-guide.html">Deposit Calculator</a></li>
+          <li><a href="first-time-buyer-checklist.html">FTB Checklist</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Guides</h4>
+        <ul>
+          <li><a href="first-time-buyer-guide.html">First-Time Buyer Guide</a></li>
+          <li><a href="conveyancing-guide.html">Conveyancing</a></li>
+          <li><a href="shared-ownership-guide.html">Shared Ownership</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>About</h4>
+        <ul>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="about.html#affiliate">Affiliate Disclosure</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-legal">
+        <strong>Disclaimer:</strong> This calculator provides estimates for guidance only. Actual SDLT liability may differ. Tax rules change — verify with HMRC or your solicitor before exchanging contracts. This is not financial or tax advice. Some links are affiliate links — we may earn a commission when you use them, at no extra cost to you. First Home Guide is not FCA-authorised and does not provide regulated mortgage advice.
+        <br><br>© 2026 First Home Guide · firsthomeguide.co.uk
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="js/calculator.js"></script>
+<script>
+  // ── Full calculator UI logic ──────────────────────────────────────────
+
+  function runCalc() {
+    const price       = parseFloat(document.getElementById('price').value) || 0;
+    const buyerType   = document.querySelector('input[name="buyer"]:checked')?.value || 'ftb';
+    const nonResident = document.getElementById('non-resident').checked;
+
+    // Update radio styles
+    document.querySelectorAll('#buyer-type-group .radio-option').forEach(el => el.classList.remove('selected'));
+    document.querySelector('input[name="buyer"]:checked')?.closest('.radio-option')?.classList.add('selected');
+
+    const result      = document.getElementById('result');
+    const placeholder = document.getElementById('calc-placeholder');
+    const comparison  = document.getElementById('comparison-section');
+
+    if (!price || price < 1000) {
+      result.classList.remove('visible');
+      placeholder.style.display = 'block';
+      comparison.style.display = 'none';
+      return;
+    }
+
+    const sdlt = calcSDLT(price, buyerType, nonResident);
+
+    // Main result
+    document.getElementById('result-total').innerHTML =
+      `${formatGBP(sdlt.total)} <small>stamp duty</small>`;
+    document.getElementById('result-rate').textContent = `${sdlt.effectiveRate}%`;
+
+    // Breakdown table
+    const tbody = document.getElementById('breakdown-body');
+    tbody.innerHTML = '';
+
+    // Handle FTB with price > 500k (standard rates apply)
+    const breakdown = sdlt.breakdown;
+    const total     = sdlt.total - sdlt.nonResidentSurcharge;
+
+    breakdown.forEach((band, i) => {
+      const isZero  = band.tax === 0;
+      const isLast  = i === breakdown.length - 1;
+      const row     = document.createElement('tr');
+      row.className = isZero ? 'zero-row' : '';
+      row.innerHTML = `
+        <td>${formatBandRange(band.from, band.to)}</td>
+        <td>${(band.rate * 100).toFixed(0)}%</td>
+        <td>${formatGBP(band.taxable)}</td>
+        <td>${formatGBP(band.tax)}</td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    // Non-resident surcharge row
+    if (sdlt.nonResidentSurcharge > 0) {
+      const nrRow = document.createElement('tr');
+      nrRow.innerHTML = `
+        <td>Non-resident surcharge (2%)</td>
+        <td>2%</td>
+        <td>${formatGBP(price)}</td>
+        <td>${formatGBP(sdlt.nonResidentSurcharge)}</td>
+      `;
+      tbody.appendChild(nrRow);
+    }
+
+    // Total row
+    const totalRow = document.createElement('tr');
+    totalRow.className = 'total-row';
+    totalRow.innerHTML = `
+      <td colspan="3"><strong>Total SDLT due</strong></td>
+      <td>${formatGBP(sdlt.total)}</td>
+    `;
+    tbody.appendChild(totalRow);
+
+    // Insight
+    let insight = '';
+    if (buyerType === 'ftb' && price <= 300_000) {
+      insight = `<strong>Zero stamp duty!</strong> As a first-time buyer purchasing under £300,000, you pay nothing in stamp duty — one of the biggest financial benefits of FTB status.`;
+    } else if (buyerType === 'ftb' && price <= 500_000) {
+      insight = `As a first-time buyer, you save <strong>${formatGBP(sdlt.ftbRelief)}</strong> compared to a standard buyer. Your effective SDLT rate is just ${sdlt.effectiveRate}% on a ${formatGBP(price)} purchase.`;
+    } else if (buyerType === 'ftb' && price > 500_000) {
+      insight = `⚠️ Because this property costs over £500,000, first-time buyer relief does not apply. Standard SDLT rates are used instead.`;
+    } else if (buyerType === 'additional') {
+      insight = `The 5% additional property surcharge adds <strong>${formatGBP(sdlt.additionalSurcharge)}</strong> to what you'd pay as a standard buyer. Consider whether selling your current home first could save you this amount.`;
+    } else {
+      insight = `Your effective SDLT rate is ${sdlt.effectiveRate}% on a ${formatGBP(price)} purchase. The tax is calculated progressively — you only pay the higher rates on the portion above each threshold.`;
+    }
+    document.getElementById('result-insight').innerHTML = insight;
+
+    result.classList.add('visible');
+    placeholder.style.display = 'none';
+
+    // Comparison grid
+    renderComparison(price, nonResident);
+    comparison.style.display = 'block';
+  }
+
+  function renderComparison(price, nonResident) {
+    const types = [
+      { key: 'ftb',        label: 'First-time buyer', color: 'var(--green)' },
+      { key: 'standard',   label: 'Standard buyer',   color: 'var(--navy)' },
+      { key: 'additional', label: 'Additional property', color: 'var(--red)' },
+    ];
+
+    const grid = document.getElementById('comparison-grid');
+    grid.innerHTML = '';
+
+    types.forEach(t => {
+      const sdlt = calcSDLT(price, t.key, nonResident);
+      const div  = document.createElement('div');
+      div.style.cssText = `padding: 16px; border: 1.5px solid ${t.color}; border-radius: 8px; text-align: center;`;
+      div.innerHTML = `
+        <div style="font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; color: ${t.color}; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">${t.label}</div>
+        <div style="font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; color: var(--navy);">${formatGBP(sdlt.total)}</div>
+        <div style="font-family: var(--font-ui); font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">${sdlt.effectiveRate}% effective rate</div>
+      `;
+      grid.appendChild(div);
+    });
+  }
+
+  // Responsive sidebar
+  function checkLayout() {
+    const layout = document.getElementById('calcLayout');
+    if (window.innerWidth < 900) {
+      layout.style.gridTemplateColumns = '1fr';
+    } else {
+      layout.style.gridTemplateColumns = '1fr 320px';
+    }
+  }
+  window.addEventListener('resize', checkLayout);
+  checkLayout();
+</script>
+
+</body>
+</html>

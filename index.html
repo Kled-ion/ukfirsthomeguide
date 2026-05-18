@@ -1,0 +1,435 @@
+<!--
+  ⚠️ AFFILIATE LINK PLACEHOLDERS
+  All href="https://www.habito.com/" and href="https://www.landc.co.uk/" links
+  below are PLACEHOLDERS. Before going live, replace each with the actual
+  Awin tracking URL from your Awin publisher dashboard.
+  Format will be: https://www.awin1.com/cread.php?awinmid=XXXXX&awinaffid=YOUR_ID
+  Without this fix, NO commission will be tracked.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>First Home Guide UK — Free Guides, Calculators & Expert Advice for UK Buyers</title>
+  <meta name="description" content="Free, independent guides for UK home buyers. Stamp duty calculator, mortgage deposit guide, first-time buyer checklist, and more. No jargon, no sales pitch." />
+  <meta name="keywords" content="first time buyer uk, stamp duty calculator 2026, mortgage deposit guide, uk home buying guide, first home uk" />
+  <link rel="canonical" href="https://www.firsthomeguide.co.uk/" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="First Home Guide UK — Free Guides for UK Buyers" />
+  <meta property="og:description" content="Stamp duty calculators, mortgage guides, and first-time buyer advice. Free and independent." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.firsthomeguide.co.uk/" />
+
+  <!-- Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "First Home Guide UK",
+    "url": "https://www.firsthomeguide.co.uk",
+    "description": "Free, independent guides and calculators for UK home buyers",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://www.firsthomeguide.co.uk/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>" />
+</head>
+<body>
+
+<!-- ── Navigation ─────────────────────────────────────────────────────── -->
+<nav class="nav" role="navigation" aria-label="Main navigation">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      🏠 First Home Guide
+      <span class="nav-logo-badge">Free</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="stamp-duty-calculator.html">Stamp Duty Calculator</a></li>
+      <li><a href="first-time-buyer-guide.html">FTB Guide</a></li>
+      <li><a href="mortgage-deposit-guide.html">Deposit Guide</a></li>
+      <li><a href="stamp-duty-calculator.html" class="nav-cta btn btn-sm">Calculate Now</a></li>
+    </ul>
+    <button class="nav-mobile-toggle" aria-label="Toggle menu" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+  </div>
+</nav>
+
+<!-- ── Hero ───────────────────────────────────────────────────────────── -->
+<section class="hero" aria-labelledby="hero-heading">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Free & Independent — Updated for 2026</p>
+    <h1 id="hero-heading" class="animate-in">Everything you need to buy your first home in the UK</h1>
+    <p class="hero-sub animate-in-2">
+      Clear guides, accurate calculators, and honest advice — with no jargon and no sales pitch.
+      From stamp duty to solicitor fees, we cover the whole journey.
+    </p>
+    <div class="hero-actions animate-in-3">
+      <a href="stamp-duty-calculator.html" class="btn btn-primary btn-lg">Calculate Your Stamp Duty →</a>
+      <a href="first-time-buyer-guide.html" class="btn btn-outline btn-lg">First-Time Buyer Guide</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Trust Strip ─────────────────────────────────────────────────────── -->
+<div class="trust-strip">
+  <div class="trust-strip-inner">
+    <div class="trust-item"><span class="trust-icon">✓</span> Updated April 2025 SDLT rates</div>
+    <div class="trust-item"><span class="trust-icon">✓</span> No registration required</div>
+    <div class="trust-item"><span class="trust-icon">✓</span> Independent — not owned by a lender</div>
+    <div class="trust-item"><span class="trust-icon">✓</span> Used by thousands of UK buyers</div>
+  </div>
+</div>
+
+<!-- ── Stamp Duty Calculator Preview ─────────────────────────────────── -->
+<section style="background: var(--white); padding: 64px 24px;">
+  <div style="max-width: var(--max-w); margin: 0 auto;">
+    <div class="section-header">
+      <p class="section-label">Most Popular Tool</p>
+      <h2>Stamp Duty Calculator 2026</h2>
+      <p>Get an instant, accurate SDLT estimate for England & Northern Ireland. Updated for the April 2025 rate changes.</p>
+    </div>
+
+    <!-- Inline mini calculator -->
+    <div class="calc-wrapper" style="max-width: 680px;">
+      <div class="calc-header">
+        <h2>How much stamp duty will you pay?</h2>
+        <p>England & Northern Ireland · 2026 HMRC rates · Free & instant</p>
+      </div>
+      <div class="calc-body">
+        <div style="margin-bottom: 20px;">
+          <div class="field-group">
+            <label class="field-label" for="home-price">Property price</label>
+            <div class="input-prefix-wrap">
+              <input type="number" class="field-input price-input" id="home-price"
+                placeholder="350,000" min="0" max="10000000" step="1000"
+                oninput="homeCalc()" aria-label="Property price in pounds" />
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <div class="field-label" style="margin-bottom: 8px;">Buyer type</div>
+          <div class="radio-group" id="home-buyer-type">
+            <label class="radio-option selected">
+              <input type="radio" name="home-buyer" value="ftb" checked onchange="homeCalc()" /> First-time buyer
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="home-buyer" value="standard" onchange="homeCalc()" /> Standard buyer (moving home)
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="home-buyer" value="additional" onchange="homeCalc()" /> Additional property (second home / BTL)
+            </label>
+          </div>
+        </div>
+
+        <div id="home-result" class="calc-result">
+          <div class="result-headline">Estimated Stamp Duty</div>
+          <div class="result-amount" id="home-result-amount">£0</div>
+          <div id="home-result-insight" class="result-insight"></div>
+          <div style="text-align: center; margin-top: 16px;">
+            <a href="stamp-duty-calculator.html" class="btn btn-primary">Full breakdown with band-by-band detail →</a>
+          </div>
+        </div>
+
+        <div id="home-placeholder" style="text-align: center; padding: 16px 0; font-family: var(--font-ui); font-size: 0.9rem; color: var(--text-muted);">
+          Enter a property price above to see your stamp duty estimate
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Key Stats ──────────────────────────────────────────────────────── -->
+<section class="section-sm" style="background: var(--cream);">
+  <div class="container">
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-number">£300k</div>
+        <div class="stat-label">FTB stamp duty threshold 2026</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">5–10%</div>
+        <div class="stat-label">Typical mortgage deposit required</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">8–12wk</div>
+        <div class="stat-label">Average UK conveyancing time</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">£2,000+</div>
+        <div class="stat-label">Average solicitor fees in England</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Guide Cards ────────────────────────────────────────────────────── -->
+<section class="section" style="background: var(--cream);">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-label">Free Guides</p>
+      <h2>Everything you need to know</h2>
+      <p>Written in plain English by people who've been through it. No upselling, no jargon.</p>
+    </div>
+
+    <div class="card-grid card-grid-3">
+
+      <a href="stamp-duty-calculator.html" class="guide-card">
+        <div class="guide-card-banner" style="background: var(--amber);"></div>
+        <div class="guide-card-body">
+          <div class="guide-card-icon">🧮</div>
+          <div class="guide-card-tag">Most Popular · Tool</div>
+          <h3>Stamp Duty Calculator 2026</h3>
+          <p>Get an instant, accurate SDLT breakdown including first-time buyer relief, additional property surcharge, and a band-by-band analysis.</p>
+        </div>
+        <div class="guide-card-footer">
+          <span>Calculate now</span><span>→</span>
+        </div>
+      </a>
+
+      <a href="first-time-buyer-guide.html" class="guide-card">
+        <div class="guide-card-banner" style="background: var(--navy);"></div>
+        <div class="guide-card-body">
+          <div class="guide-card-icon">🗝️</div>
+          <div class="guide-card-tag">Essential Reading</div>
+          <h3>Complete First-Time Buyer Guide</h3>
+          <p>From saving your deposit to getting the keys — everything you need to know about buying your first home in the UK, step by step.</p>
+        </div>
+        <div class="guide-card-footer">
+          <span>Read guide</span><span>→</span>
+        </div>
+      </a>
+
+      <a href="mortgage-deposit-guide.html" class="guide-card">
+        <div class="guide-card-banner" style="background: var(--green);"></div>
+        <div class="guide-card-body">
+          <div class="guide-card-icon">💰</div>
+          <div class="guide-card-tag">Finance</div>
+          <h3>How Much Deposit Do You Need?</h3>
+          <p>LTV ratios explained, minimum deposits by lender type, how your deposit affects your mortgage rate, and how to save faster.</p>
+        </div>
+        <div class="guide-card-footer">
+          <span>Learn more</span><span>→</span>
+        </div>
+      </a>
+
+      <a href="conveyancing-guide.html" class="guide-card">
+        <div class="guide-card-banner" style="background: #7B5EA7;"></div>
+        <div class="guide-card-body">
+          <div class="guide-card-icon">📋</div>
+          <div class="guide-card-tag">Legal Process</div>
+          <h3>Conveyancing Explained</h3>
+          <p>What is conveyancing, how long does it take, how much does it cost, and how to choose a solicitor or licensed conveyancer.</p>
+        </div>
+        <div class="guide-card-footer">
+          <span>Read guide</span><span>→</span>
+        </div>
+      </a>
+
+      <a href="shared-ownership-guide.html" class="guide-card">
+        <div class="guide-card-banner" style="background: #2A7D7D;"></div>
+        <div class="guide-card-body">
+          <div class="guide-card-icon">🤝</div>
+          <div class="guide-card-tag">Schemes</div>
+          <h3>Shared Ownership — Is It Worth It?</h3>
+          <p>An honest look at shared ownership — the pros, the cons, the hidden costs, and whether it makes financial sense for your situation.</p>
+        </div>
+        <div class="guide-card-footer">
+          <span>Honest review</span><span>→</span>
+        </div>
+      </a>
+
+      <a href="first-time-buyer-checklist.html" class="guide-card">
+        <div class="guide-card-banner" style="background: var(--amber-dark);"></div>
+        <div class="guide-card-body">
+          <div class="guide-card-icon">✅</div>
+          <div class="guide-card-tag">Planning Tool</div>
+          <h3>First-Time Buyer Checklist</h3>
+          <p>A complete, printable checklist covering every stage — from mortgage in principle to completion day — so nothing slips through the cracks.</p>
+        </div>
+        <div class="guide-card-footer">
+          <span>Get checklist</span><span>→</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Affiliate CTA Section ──────────────────────────────────────────── -->
+<section class="section" style="background: var(--white);">
+  <div class="container">
+    <div style="max-width: 680px; margin: 0 auto;">
+      <div class="section-header mb-40">
+        <p class="section-label">Ready for the next step?</p>
+        <h2>Talk to a mortgage expert — free</h2>
+        <p>We recommend speaking to an independent, FCA-authorised broker before applying for a mortgage. They search the whole market and don't charge you a fee.</p>
+      </div>
+
+      <div class="card-grid card-grid-2">
+        <div class="card" style="border-top: 3px solid var(--navy);">
+          <div style="font-size: 1.8rem; margin-bottom: 12px;">🏦</div>
+          <h3 style="font-family: var(--font-display); font-size: 1.1rem; color: var(--navy); margin-bottom: 8px;">Habito</h3>
+          <p style="font-family: var(--font-ui); font-size: 0.875rem; color: var(--text-mid); margin-bottom: 16px; line-height: 1.5;">Online broker searching 90+ lenders. Free to use, FCA-authorised, highly rated by first-time buyers.</p>
+          <a href="https://www.habito.com/" target="_blank" rel="noopener sponsored" class="btn btn-navy btn-sm">Get free advice →</a>
+          <p style="font-family: var(--font-ui); font-size: 0.72rem; color: var(--text-muted); margin-top: 10px;">Sponsored · We may earn a commission</p>
+        </div>
+
+        <div class="card" style="border-top: 3px solid var(--amber);">
+          <div style="font-size: 1.8rem; margin-bottom: 12px;">🔍</div>
+          <h3 style="font-family: var(--font-display); font-size: 1.1rem; color: var(--navy); margin-bottom: 8px;">L&C Mortgages</h3>
+          <p style="font-family: var(--font-ui); font-size: 0.875rem; color: var(--text-mid); margin-bottom: 16px; line-height: 1.5;">UK's largest fee-free mortgage broker. Award-winning service, whole of market search, FCA-authorised.</p>
+          <a href="https://www.landc.co.uk/" target="_blank" rel="noopener sponsored" class="btn btn-primary btn-sm">Compare rates →</a>
+          <p style="font-family: var(--font-ui); font-size: 0.72rem; color: var(--text-muted); margin-top: 10px;">Sponsored · We may earn a commission</p>
+        </div>
+      </div>
+
+      <div class="callout callout-info mt-24">
+        <div class="callout-title">ℹ️ Our independence promise</div>
+        First Home Guide earns a referral fee from some partners when you click through and complete a product. This does not affect our editorial content. We only recommend FCA-authorised services. <a href="about.html" style="color: var(--navy); font-weight: 600;">Read our full disclosure →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Quick Cost Summary ──────────────────────────────────────────────── -->
+<section class="section" style="background: var(--navy); color: var(--white);">
+  <div class="container">
+    <div class="section-header" style="color: var(--white);">
+      <p class="section-label" style="color: var(--amber);">Budget Planning</p>
+      <h2 style="color: var(--white);">True cost of buying a home</h2>
+      <p style="color: rgba(255,255,255,0.75);">Stamp duty is just the start. Here are all the costs first-time buyers often miss.</p>
+    </div>
+
+    <div class="card-grid card-grid-3" style="gap: 16px;">
+      <div style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-lg); padding: 24px;">
+        <div style="font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--amber); margin-bottom: 8px;">Stamp Duty</div>
+        <div style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: var(--white); margin-bottom: 6px;">£0–£6,250+</div>
+        <div style="font-family: var(--font-ui); font-size: 0.85rem; color: rgba(255,255,255,0.65);">First-time buyers pay 0% up to £300k. 5% on the portion from £300k–£500k.</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-lg); padding: 24px;">
+        <div style="font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--amber); margin-bottom: 8px;">Solicitor / Conveyancer</div>
+        <div style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: var(--white); margin-bottom: 6px;">£1,500–£3,000</div>
+        <div style="font-family: var(--font-ui); font-size: 0.85rem; color: rgba(255,255,255,0.65);">Includes searches, Land Registry fee, and legal fees. Always get at least three quotes.</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-lg); padding: 24px;">
+        <div style="font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--amber); margin-bottom: 8px;">Survey</div>
+        <div style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: var(--white); margin-bottom: 6px;">£400–£1,500</div>
+        <div style="font-family: var(--font-ui); font-size: 0.85rem; color: rgba(255,255,255,0.65);">RICS Level 2 (HomeBuyer) or Level 3 (Building Survey). Never skip this.</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-lg); padding: 24px;">
+        <div style="font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--amber); margin-bottom: 8px;">Mortgage Fees</div>
+        <div style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: var(--white); margin-bottom: 6px;">£0–£2,000</div>
+        <div style="font-family: var(--font-ui); font-size: 0.85rem; color: rgba(255,255,255,0.65);">Arrangement, booking, and valuation fees. Some lenders charge none — always compare.</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-lg); padding: 24px;">
+        <div style="font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--amber); margin-bottom: 8px;">Moving Costs</div>
+        <div style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: var(--white); margin-bottom: 6px;">£300–£2,000</div>
+        <div style="font-family: var(--font-ui); font-size: 0.85rem; color: rgba(255,255,255,0.65);">Removals company or van hire. Depends on how much you have and how far you're going.</div>
+      </div>
+      <div style="background: rgba(232,168,56,0.2); border: 1px solid rgba(232,168,56,0.4); border-radius: var(--radius-lg); padding: 24px;">
+        <div style="font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--amber); margin-bottom: 8px;">Typical Total Budget</div>
+        <div style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: var(--amber); margin-bottom: 6px;">£3,000–£12,000</div>
+        <div style="font-family: var(--font-ui); font-size: 0.85rem; color: rgba(255,255,255,0.65);">On top of your deposit. Budget for the higher end to avoid nasty surprises.</div>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px;">
+      <a href="stamp-duty-calculator.html" class="btn btn-primary btn-lg">Calculate your exact stamp duty →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ──────────────────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h3>🏠 First Home Guide</h3>
+        <p>Free, independent guides and calculators for UK home buyers. We're not owned by a bank, mortgage lender, or estate agent. Our only goal is to help you make the right decision.</p>
+        <p style="font-size: 0.78rem; color: rgba(255,255,255,0.4);">Based in the UK · Serving England & Northern Ireland</p>
+      </div>
+      <div class="footer-col">
+        <h4>Tools</h4>
+        <ul>
+          <li><a href="stamp-duty-calculator.html">Stamp Duty Calculator</a></li>
+          <li><a href="mortgage-deposit-guide.html">Deposit Calculator</a></li>
+          <li><a href="first-time-buyer-checklist.html">FTB Checklist</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Guides</h4>
+        <ul>
+          <li><a href="first-time-buyer-guide.html">First-Time Buyer Guide</a></li>
+          <li><a href="conveyancing-guide.html">Conveyancing Explained</a></li>
+          <li><a href="shared-ownership-guide.html">Shared Ownership</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>About</h4>
+        <ul>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="about.html#affiliate">Affiliate Disclosure</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-legal">
+        <strong>Important:</strong> First Home Guide provides general information only and does not constitute financial advice. Mortgage products and tax rules change — always verify with HMRC and consult an FCA-authorised advisor before making financial decisions. Some links on this site are affiliate links — we may earn a commission when you use them, at no extra cost to you.
+        <br><br>© 2026 First Home Guide · firsthomeguide.co.uk
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="js/calculator.js"></script>
+<script>
+  // Mini homepage calculator
+  function homeCalc() {
+    const price = parseFloat(document.getElementById('home-price').value) || 0;
+    const buyerType = document.querySelector('input[name="home-buyer"]:checked')?.value || 'ftb';
+
+    // Update radio option styles
+    document.querySelectorAll('.radio-option').forEach(el => el.classList.remove('selected'));
+    document.querySelector('input[name="home-buyer"]:checked')?.closest('.radio-option')?.classList.add('selected');
+
+    const result = document.getElementById('home-result');
+    const placeholder = document.getElementById('home-placeholder');
+
+    if (!price || price < 1000) {
+      result.classList.remove('visible');
+      placeholder.style.display = 'block';
+      return;
+    }
+
+    const sdlt = calcSDLT(price, buyerType);
+    document.getElementById('home-result-amount').innerHTML =
+      `£${sdlt.total.toLocaleString('en-GB', { minimumFractionDigits: 0 })} <small>stamp duty</small>`;
+
+    let insight = '';
+    if (buyerType === 'ftb' && price <= 300000) {
+      insight = `<strong>Great news —</strong> as a first-time buyer purchasing under £300,000, you pay <strong>zero stamp duty</strong>. This is one of the key benefits of FTB status.`;
+    } else if (buyerType === 'ftb' && price <= 500000) {
+      const saving = calcSDLT(price, 'standard').total - sdlt.total;
+      insight = `As a first-time buyer, you save <strong>£${saving.toLocaleString('en-GB')}</strong> compared to a standard buyer thanks to FTB relief.`;
+    } else if (buyerType === 'additional') {
+      insight = `The 5% additional property surcharge adds significantly to your costs. Consider whether selling your current home first could save you money.`;
+    } else {
+      insight = `Your stamp duty is £${sdlt.total.toLocaleString('en-GB')}. Get the full band-by-band breakdown using our detailed calculator below.`;
+    }
+
+    document.getElementById('home-result-insight').innerHTML = insight;
+    result.classList.add('visible');
+    placeholder.style.display = 'none';
+  }
+</script>
+
+</body>
+</html>
