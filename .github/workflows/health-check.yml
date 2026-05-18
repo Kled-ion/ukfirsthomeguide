@@ -1,0 +1,54 @@
+# BEACON PROJECT — Automated Daily Health Check
+# ================================================
+# This file tells GitHub to run our health check script
+# automatically every day at 8am UK time.
+#
+# It also runs every time you push code — so you catch
+# issues before they go live.
+#
+# Setup:
+#  1. Save this file as: .github/workflows/health-check.yml
+#     (create the .github/workflows/ folders if they don't exist)
+#  2. Push to GitHub
+#  3. Go to GitHub → your repo → Actions tab to see it running
+#
+# If a check fails, GitHub emails you automatically.
+
+name: Daily Site Health Check
+
+on:
+  # Run every day at 8am UTC (9am UK summer, 8am UK winter)
+  schedule:
+    - cron: '0 8 * * *'
+
+  # Also run on every push to main branch
+  push:
+    branches: [ main ]
+
+  # Allow manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    name: Check Both Sites Are Live and Correct
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run health checks
+        run: node scripts/health-check.js
+
+      - name: Report success
+        if: success()
+        run: echo "✅ All site checks passed at $(date)"
+
+      - name: Report failure
+        if: failure()
+        run: echo "🔴 Site checks FAILED at $(date) — check the logs above"
