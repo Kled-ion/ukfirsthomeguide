@@ -3,81 +3,103 @@
  * BEACON PROJECT — Agent 4: Affiliate Health Monitor
  * ============================================================
  * File:      scripts/agent-4-affiliate.js
- * Purpose:   Verifies affiliate partners are live, checks for
- *            placeholder Awin IDs, and confirms partner links
- *            are present in live site HTML. All failures are
- *            verified twice before reporting.
+ * Purpose:   Verifies affiliate partner homepages are live,
+ *            checks for placeholder Awin IDs in live code,
+ *            and monitors partner fee accuracy.
+ *            All failures verified twice before reporting.
  * Schedule:  Weekly Monday 8am UTC
  * Owner:     Kleds (Kled-ion on GitHub)
  * ============================================================
  */
+
 "use strict";
-const { fetchUrl, checkUrl } = require("./http");
-const { verifyAll }          = require("./verify");
+
+const { fetchUrl, pingUrl } = require("./http");
+const { verifyAll }         = require("./verify");
+const { createFinding, createReport, printHeader, printPass, printFlag, printFinding, printSummary, exitWithCode } = require("./output");
 const { SITES, AFFILIATE_PARTNERS } = require("./config");
 
+const AGENT_NAME = "Agent 4: Affiliate Health Monitor";
+
 async function run() {
-  console.log("\n══════════════════════════════════════════════════");
-  console.log("BEACON — Agent 4: Affiliate Health Monitor");
-  console.log(`Run at: ${new Date().toISOString()}`);
-  console.log("══════════════════════════════════════════════════\n");
+  printHeader(AGENT_NAME);
 
   const rawFindings = [];
+  const passed      = [];
+  let   totalChecks = 0;
 
-  // Check 1: Partner homepages
+  // Check 1: Partner homepages are live
   console.log("── Checking partner homepages ──\n");
-  for (const partner of PARTNERS) {
-    try {
-      const result = await checkUrl(partner.url);
-      if (!result.ok) {
-        rawFindings.push({ type:"http_error", url:partner.url, phrase:"", description:`${partner.name} homepage DOWN (HTTP ${result.status})`, severity:"RED" });
-        console.log(`⚠️  ${partner.name} — HTTP ${result.status}`);
-      } else {
-        console.log(`✅ ${partner.name} — live`);
-      }
-    } catch (err) {
-      rawFindings.push({ type:"http_error", url:partner.url, phrase:"", description:`${partner.name} — unreachable: ${err.message}`, severity:"RED" });
-      console.log(`⚠️  ${partner.name} — error: ${err.message}`);
+  for (const [key, partner] of Object.entries(AFFILIATE_PARTNERS)) {
+    totalChecks++;
+    const result = await pingUrl(partner.homepage);
+    if (!result.ok) {
+      rawFindings.push(createFinding({
+        agent: AGENT_NAME, name: `${partner.name} homepage`,
+        type: "http_error",
+        description: `${partner.name} homepage DOWN — ${partner.homepage} returned HTTP ${result.status || result.error}`,
+        severity: "RED", url: partner.homepage, phrase: "",
+        action: `Check ${partner.name} manually — may affect affiliate earnings`,
+      }));
+      printFlag(`${partner.name}`, `HTTP ${result.status || "error"}`);
+    } else {
+      passed.push(`${partner.name} homepage`);
+      printPass(`${partner.name}`, "live ✓");
     }
   }
 
-  // Check 2: Placeholder Awin IDs in live HTML
-  console.log("\n── Checking live site affiliate links ──\n");
-  for (const [siteKey, site] of Object.entries(SITES)) {
-    try {
-      const res = await fetchUrl(site.baseUrl + "/");
-      if (res.body.includes("YOUR_AWIN_ID")) {
-        rawFindings.push({ type:"forbidden_phrase", url:site.baseUrl + "/", phrase:"YOUR_AWIN_ID", description:`${site.name} — Awin placeholder ID in live code. Commission NOT tracking.`, severity:"RED" });
-        console.log(`⚠️  ${site.name} — Awin placeholder found`);
-      } else {
-        console.log(`✅ ${site.name} — no Awin placeholder detected`);
-      }
-    } catch (err) {
-      rawFindings.push({ type:"http_error", url:site.baseUrl, phrase:"", description:`${site.name} — could not check affiliate links: ${err.message}`, severity:"AMBER" });
+  // Check 2: Partner fee accuracy
+  console.log("\n── Checking partner fee accuracy ──\n");
+  for (const [, partner] of Object.entries(AFFILIATE_PARTNERS)) {
+    if (!partner.feePageUrl || !partner.feePhrase) continue;
+    totalChecks++;
+    const res = await fetchUrl(partner.feePageUrl);
+    if (res.ok && !res.body.includes(partner.feePhrase)) {
+      rawFindings.push(createFinding({
+        agent: AGENT_NAME, name: `${partner.name} fee accuracy`,
+        type: "missing_phrase",
+        description: `${partner.name} fee page no longer shows "${partner.feePhrase}" — our stated fee "${partner.currentFees}" may be outdated`,
+        severity: "AMBER", url: partner.feePageUrl, phrase: partner.feePhrase,
+        action: `Check ${partner.name} pricing at ${partner.feePageUrl} and update site content if changed`,
+      }));
+      printFlag(`${partner.name} fees`, `"${partner.feePhrase}" not found — may have changed`);
+    } else if (res.ok) {
+      passed.push(`${partner.name} fees`);
+      printPass(`${partner.name} fees`, `"${partner.feePhrase}" confirmed`);
     }
   }
 
-  // Self-verification
-  console.log(`\n── Self-verification (${rawFindings.length} finding(s)) ──`);
+  // Check 3: No placeholder Awin IDs in live sites
+  console.log("\n── Checking live sites for placeholder affiliate links ──\n");
+  for (const [, site] of Object.entries(SITES)) {
+    totalChecks++;
+    const res = await fetchUrl(site.baseUrl + "/");
+    if (res.ok && res.body.includes("YOUR_AWIN_ID")) {
+      rawFindings.push(createFinding({
+        agent: AGENT_NAME, name: `${site.name} Awin ID`,
+        type: "forbidden_phrase",
+        description: `${site.name} — Awin placeholder ID found in live code. Affiliate links NOT tracking. Zero commission being earned.`,
+        severity: "RED", url: site.baseUrl, phrase: "YOUR_AWIN_ID",
+        action: "Update affiliate links with real Awin publisher ID",
+      }));
+      printFlag(`${site.name}`, "Awin placeholder found — not earning");
+    } else if (res.ok) {
+      passed.push(`${site.name} affiliate links`);
+      printPass(`${site.name}`, "no placeholder detected ✓");
+    }
+  }
+
   const confirmed = await verifyAll(rawFindings, true);
-
-  const red   = confirmed.filter(f => f.severity === "RED");
-  const amber = confirmed.filter(f => f.severity === "AMBER");
-
   console.log("── Final report ──\n");
-  red.forEach(f   => console.log(`🔴 RED   [${f.confidence}]: ${f.description}`));
-  amber.forEach(f => console.log(`🟠 AMBER [${f.confidence}]: ${f.description}`));
+  confirmed.forEach(f => printFinding(f));
 
-  console.log(`\n── Revenue check reminder ──`);
-  console.log("ℹ️  To verify commissions: Log into Awin → Reports → Transaction Reports");
-  console.log("   No commissions after 2 weeks live → verify Awin tracking URL format");
+  console.log("\n── Revenue reminder ──\n");
+  console.log("  To check commissions: Awin dashboard → Reports → Transaction Reports");
+  console.log("  No commissions after 2+ weeks live → verify Awin tracking URL format");
 
-  console.log(`\n══════════════════════════════════════════════════`);
-  console.log(`Partners: ${PARTNERS.length} | Red: ${red.length} | Amber: ${amber.length}`);
-
-  if (red.length > 0)        { console.log("🔴 Affiliate issues confirmed"); process.exit(1); }
-  else if (amber.length > 0) { console.log("🟠 Warnings confirmed"); process.exit(0); }
-  else                       { console.log("✅ All affiliate checks verified clean"); process.exit(0); }
+  const report = createReport({ agent: AGENT_NAME, totalChecks, findings: confirmed, passed });
+  printSummary(report);
+  exitWithCode(report);
 }
 
-run().catch(err => { console.error("Agent 4 error:", err.message); process.exit(1); });
+run().catch(err => { console.error(`${AGENT_NAME} error:`, err.message); process.exit(1); });
