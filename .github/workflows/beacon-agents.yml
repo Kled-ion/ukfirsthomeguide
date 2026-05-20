@@ -1,183 +1,228 @@
 # ============================================================
-# BEACON PROJECT — GitHub Actions Workflows
+# BEACON PROJECT — Complete Agent System Workflows
 # ============================================================
 # File:     .github/workflows/beacon-agents.yml
-# Purpose:  Runs all 7 agents on their correct schedules
-#           automatically. No manual involvement needed.
+# Purpose:  Runs all agents on their correct schedules.
+#           Silence = all clear. Email = action needed.
 #
-# Schedule summary:
-#   Daily   (8am UTC): Agents 1 + 2  — accuracy and health
-#   Weekly  (Mon 8am): Agents 3,4,5  — SEO, affiliate, competitor
-#   Monthly (1st 8am): Agents 6 + 7  — freshness and legal
-#   Weekly  (Mon 9am): Full digest    — summary of everything
+# Agent schedules:
+#   Hourly    → Agent 8  (uptime ping)
+#   Daily 8am → Agents 1, 2 (accuracy + health)
+#   Weekly    → Agents 3,4,5,11,12 + full digest
+#   Monthly   → Agents 6,7,9,10
 #
-# On failure: GitHub emails you automatically.
-# On success: Nothing happens. Silence is good news.
-#
-# Setup: Push this file to .github/workflows/ in your repo.
+# Owner:    Kleds (Kled-ion on GitHub)
 # ============================================================
 
 name: Beacon Agent System
 
 on:
-  # ── Daily: Accuracy + Health ──────────────────────────────────────────
   schedule:
-    - cron: '0 8 * * *'    # Every day at 8am UTC — agents 1 and 2
-    - cron: '0 8 * * 1'    # Every Monday at 8am UTC — agents 3, 4, 5
-    - cron: '0 8 1 * *'    # 1st of month at 8am UTC — agents 6 and 7
-    - cron: '0 9 * * 1'    # Every Monday at 9am UTC — full digest
+    - cron: '0 * * * *'      # Hourly — Agent 8 uptime
+    - cron: '0 8 * * *'      # Daily 8am UTC — Agents 1, 2
+    - cron: '0 8 * * 1'      # Monday 8am UTC — weekly agents
+    - cron: '0 9 * * 1'      # Monday 9am UTC — weekly digest
+    - cron: '0 8 1 * *'      # 1st of month 8am UTC — monthly agents
 
-  # Manual trigger from GitHub Actions tab
+  # Manual trigger — run any agent on demand
   workflow_dispatch:
     inputs:
       agent:
-        description: 'Which agent to run (all, 1, 2, 3, 4, 5, 6, 7, digest)'
+        description: 'Which agents to run: all, uptime, daily, weekly, monthly, digest'
         required: true
         default: 'all'
 
 jobs:
 
-  # ── Daily: Accuracy Watchdog ──────────────────────────────────────────
-  accuracy-watchdog:
-    name: "Agent 1 — Accuracy Watchdog"
+  # ── Hourly: Uptime Ping ─────────────────────────────────────────────────────
+  agent-8-uptime:
+    name: "Agent 8 — Hourly Uptime Ping"
     runs-on: ubuntu-latest
     if: |
       github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'schedule')
+      github.event_name == 'schedule'
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Run uptime ping
+        run: node scripts/agent-8-uptime.js
 
-      - name: Run Accuracy Watchdog
+  # ── Daily: Accuracy Watchdog ────────────────────────────────────────────────
+  agent-1-accuracy:
+    name: "Agent 1 — Accuracy Watchdog"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run accuracy checks
         run: node scripts/agent-1-accuracy.js
 
-  # ── Daily: Site Health Monitor ────────────────────────────────────────
-  site-health:
+  # ── Daily: Site Health Monitor ──────────────────────────────────────────────
+  agent-2-health:
     name: "Agent 2 — Site Health Monitor"
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Run Health Monitor
+      - name: Run health checks
         run: node scripts/agent-2-health.js
 
-  # ── Weekly: SEO Monitor ───────────────────────────────────────────────
-  seo-monitor:
+  # ── Weekly: SEO Monitor ─────────────────────────────────────────────────────
+  agent-3-seo:
     name: "Agent 3 — SEO Monitor"
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'schedule')
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Run SEO Monitor
+      - name: Run SEO monitor
         run: node scripts/agent-3-seo.js
 
-  # ── Weekly: Affiliate Health ──────────────────────────────────────────
-  affiliate-health:
+  # ── Weekly: Affiliate Health ────────────────────────────────────────────────
+  agent-4-affiliate:
     name: "Agent 4 — Affiliate Health Monitor"
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Run Affiliate Monitor
+      - name: Run affiliate monitor
         run: node scripts/agent-4-affiliate.js
 
-  # ── Weekly: Competitor Monitor ────────────────────────────────────────
-  competitor-monitor:
+  # ── Weekly: Competitor Monitor ──────────────────────────────────────────────
+  agent-5-competitor:
     name: "Agent 5 — Competitor Monitor"
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Run Competitor Monitor
+      - name: Run competitor monitor
         run: node scripts/agent-5-competitor.js
-        continue-on-error: true  # Competitor check failures don't block other agents
+        continue-on-error: true  # Informational — never blocks pipeline
 
-  # ── Monthly: Content Freshness ────────────────────────────────────────
-  content-freshness:
+  # ── Weekly: Broken Links ────────────────────────────────────────────────────
+  agent-11-links:
+    name: "Agent 11 — Broken Link Crawler"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run link crawler
+        run: node scripts/agent-11-links.js
+
+  # ── Weekly: Seasonal Calendar ───────────────────────────────────────────────
+  agent-12-seasonal:
+    name: "Agent 12 — Seasonal Content Calendar"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run seasonal calendar
+        run: node scripts/agent-12-seasonal.js
+
+  # ── Monthly: Content Freshness ──────────────────────────────────────────────
+  agent-6-freshness:
     name: "Agent 6 — Content Freshness Auditor"
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Run Freshness Auditor
+      - name: Run freshness audit
         run: node scripts/agent-6-freshness.js
 
-  # ── Monthly: Legal Compliance ─────────────────────────────────────────
-  legal-compliance:
+  # ── Monthly: Legal Compliance ───────────────────────────────────────────────
+  agent-7-legal:
     name: "Agent 7 — Legal Compliance Monitor"
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Run Legal Monitor
+      - name: Run legal checks
         run: node scripts/agent-7-legal.js
 
-  # ── Weekly Digest ──────────────────────────────────────────────────────
+  # ── Monthly: Sitemap Generator ──────────────────────────────────────────────
+  agent-9-sitemap:
+    name: "Agent 9 — Sitemap Generator"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Generate sitemap
+        run: node scripts/agent-9-sitemap.js
+      - name: Commit updated sitemap if changed
+        run: |
+          git config user.name "Beacon Agent"
+          git config user.email "beacon@smartsacrifice.co.uk"
+          git add sitemap.xml robots.txt 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "Auto-update sitemap [beacon-agent-9]"
+          git push || true
+
+  # ── Monthly: Domain Renewal ─────────────────────────────────────────────────
+  agent-10-domains:
+    name: "Agent 10 — Domain Renewal Monitor"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check domain renewals
+        run: node scripts/agent-10-domains.js
+
+  # ── Weekly Digest ────────────────────────────────────────────────────────────
+  # Runs after all other weekly agents complete
+  # Produces a summary visible in GitHub Actions UI
   weekly-digest:
     name: "Weekly Digest — Monday Summary"
     runs-on: ubuntu-latest
-    needs: [accuracy-watchdog, site-health, seo-monitor, affiliate-health, competitor-monitor]
-    if: always()  # Run even if some agents failed — digest should always produce output
+    needs:
+      - agent-1-accuracy
+      - agent-2-health
+      - agent-3-seo
+      - agent-4-affiliate
+      - agent-5-competitor
+      - agent-11-links
+      - agent-12-seasonal
+    if: always()  # Run even if some agents failed — digest must always produce output
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Run Weekly Digest
+      - name: Run weekly digest
         run: node scripts/weekly-digest.js

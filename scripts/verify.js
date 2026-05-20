@@ -3,170 +3,142 @@
  * BEACON PROJECT — Self-Verification Module
  * ============================================================
  * File:     scripts/verify.js
- * Purpose:  Shared verification loop used by every agent.
- *           Before any finding is reported, it must pass
- *           through this module and be confirmed twice.
+ * Purpose:  Every finding from every agent must be verified
+ *           independently before being reported. This module
+ *           re-checks each finding and assigns a confidence
+ *           level. LOW confidence findings cannot be RED.
+ *           Transient errors are dismissed automatically.
  *
  * The loop:
- *   Pass 1 — Initial finding detected
- *   Pass 2 — Re-fetch the source independently and reconfirm
- *   Pass 3 — Cross-check against a second source if available
- *   Result  — Only report if confirmed in at least 2 passes
+ *   Pass 1 (in agent)  — Initial detection
+ *   Pass 2 (here)      — Independent re-fetch after 2s delay
+ *   Pass 3 (here)      — If still failing, mark as confirmed HIGH
  *
- * Why this exists:
- *   A false positive in a health check wakes you up at 3am
- *   for no reason. A false positive in a legal check creates
- *   unnecessary panic. Every finding must earn its flag.
+ * Rules:
+ *   - LOW confidence   → downgraded to INFO regardless of severity
+ *   - MEDIUM/HIGH RED  → reported as RED
+ *   - Never cry wolf   → unconfirmed findings are silently dismissed
  *
- * Confidence levels:
- *   HIGH   — Confirmed in 2+ independent checks
- *   MEDIUM — Confirmed once, second check inconclusive
- *   LOW    — Single signal only, not re-confirmed
- *
- * Rule: LOW confidence findings are NEVER escalated as RED.
- *       They appear as INFO only, with explicit uncertainty.
- *
- * Owner: Kleds (Kled-ion on GitHub)
+ * Owner:    Kleds (Kled-ion on GitHub)
  * ============================================================
  */
 
 "use strict";
 
-const { fetchUrl } = require("./http");
+const { fetchUrl }           = require("./http");
+const { THRESHOLDS }         = require("./config");
 
 /**
- * Verifies a finding by re-checking the source independently.
- * Returns a verified result with confidence level.
+ * Verifies a single finding by re-fetching the source independently.
  *
- * @param {object} finding
- * @param {string} finding.type        - "missing_phrase" | "http_error" | "forbidden_phrase"
- * @param {string} finding.url         - URL where the issue was detected
- * @param {string} finding.phrase      - The phrase that was missing or found
- * @param {string} finding.description - Human readable description
- * @param {string} finding.severity    - "RED" | "AMBER" | "INFO"
- *
- * @returns {Promise<{
- *   confirmed:   boolean,
- *   confidence:  "HIGH" | "MEDIUM" | "LOW",
- *   finding:     object,
- *   attempts:    number,
- *   shouldReport: boolean
- * }>}
+ * @param {object} finding            - Finding object from createFinding()
+ * @param {string} finding.url        - URL to re-check
+ * @param {string} finding.type       - "http_error" | "missing_phrase" | "forbidden_phrase" | "seo_missing"
+ * @param {string} finding.phrase     - The phrase to check for (if applicable)
+ * @param {string} finding.severity   - Original severity
+ * @returns {Promise<object>}         - Finding with confidence and confirmed flag set
  */
 async function verifyFinding(finding) {
-  const MAX_ATTEMPTS = 2;
   let confirmCount = 0;
 
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-    // Wait between attempts to avoid hitting the same cached response
+  for (let attempt = 1; attempt <= THRESHOLDS.verifyAttempts; attempt++) {
+
+    // Wait between attempts — avoids hitting same edge cache twice
     if (attempt > 1) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(res => setTimeout(res, THRESHOLDS.verifyDelayMs));
     }
 
-    try {
-      const res = await fetchUrl(finding.url);
+    const res = await fetchUrl(finding.url);
 
-      if (finding.type === "http_error") {
-        // Confirm the HTTP error is real, not a transient blip
-        if (res.status !== 200) {
-          confirmCount++;
-        }
+    switch (finding.type) {
+      case "http_error":
+        // Confirm: page still not returning 200
+        if (!res.ok) confirmCount++;
+        break;
 
-      } else if (finding.type === "missing_phrase") {
-        // Confirm the phrase really is missing
-        if (!res.body.includes(finding.phrase)) {
-          confirmCount++;
-        }
+      case "missing_phrase":
+        // Confirm: phrase still absent
+        if (res.ok && finding.phrase && !res.body.includes(finding.phrase)) confirmCount++;
+        // Also confirm if page is down (can't check phrase but issue exists)
+        if (!res.ok) confirmCount++;
+        break;
 
-      } else if (finding.type === "forbidden_phrase") {
-        // Confirm the forbidden phrase really is present
-        if (res.body.includes(finding.phrase)) {
-          confirmCount++;
-        }
+      case "forbidden_phrase":
+        // Confirm: forbidden phrase still present
+        if (res.ok && finding.phrase && res.body.includes(finding.phrase)) confirmCount++;
+        break;
 
-      } else if (finding.type === "seo_missing") {
-        // Confirm the SEO element really is absent
-        if (!res.body.toLowerCase().includes(finding.phrase.toLowerCase())) {
-          confirmCount++;
-        }
-      }
+      case "seo_missing":
+        // Confirm: SEO element still absent
+        if (res.ok && finding.phrase && !res.body.toLowerCase().includes(finding.phrase.toLowerCase())) confirmCount++;
+        break;
 
-    } catch (err) {
-      // Network error on re-check — counts as confirmation for http_error,
-      // but not for content checks (network error ≠ missing phrase)
-      if (finding.type === "http_error") {
+      default:
+        // Unknown type — treat as confirmed to be safe
         confirmCount++;
-      }
     }
   }
 
   // Determine confidence
-  let confidence;
-  if (confirmCount >= 2)      confidence = "HIGH";
-  else if (confirmCount === 1) confidence = "MEDIUM";
-  else                         confidence = "LOW";
+  const confidence =
+    confirmCount >= THRESHOLDS.verifyAttempts ? "HIGH"   :
+    confirmCount >= 1                          ? "MEDIUM" :
+                                                "LOW";
 
-  // LOW confidence findings should never be RED
-  const adjustedSeverity = confidence === "LOW" && finding.severity === "RED"
-    ? "INFO"
-    : finding.severity;
-
-  // Only report as an actionable issue if confirmed at least once
-  const shouldReport = confirmCount >= 1;
+  // LOW confidence findings cannot be RED — downgrade to INFO
+  const adjustedSeverity =
+    confidence === "LOW" && finding.severity === "RED" ? "INFO" : finding.severity;
 
   return {
-    confirmed:   confirmCount >= 2,
+    ...finding,
     confidence,
-    finding:     { ...finding, severity: adjustedSeverity },
-    attempts:    MAX_ATTEMPTS,
-    shouldReport,
+    severity:  adjustedSeverity,
+    confirmed: confirmCount >= 1,
   };
 }
 
 /**
- * Runs a full verification pass on a list of findings.
- * Filters out unconfirmed noise. Returns only verified issues.
+ * Verifies an array of findings.
+ * Silently dismisses findings that cannot be confirmed.
+ * Returns only confirmed findings with updated confidence levels.
  *
- * @param {Array}  findings       - Raw findings from an agent
- * @param {boolean} verbose       - Whether to log verification progress
- * @returns {Promise<Array>}      - Verified findings only
+ * @param {Array}   findings  - Raw findings from an agent
+ * @param {boolean} verbose   - Whether to log verification progress
+ * @returns {Promise<Array>}  - Verified findings only
  */
 async function verifyAll(findings, verbose = true) {
   if (findings.length === 0) return [];
 
   if (verbose) {
-    console.log(`\n  🔍 Verification loop — re-checking ${findings.length} finding(s)...`);
+    console.log(`\n  🔍 Pass 2: Verifying ${findings.length} finding(s) independently...`);
   }
 
-  const verified = [];
+  const verified  = [];
+  let   dismissed = 0;
 
   for (const finding of findings) {
     const result = await verifyFinding(finding);
 
     if (verbose) {
-      const icon = result.confidence === "HIGH"   ? "✅"
-                 : result.confidence === "MEDIUM"  ? "⚠️ "
-                 :                                   "❓";
-      console.log(`  ${icon} [${result.confidence}] ${finding.description}`);
+      const icon =
+        result.confidence === "HIGH"   ? "✅" :
+        result.confidence === "MEDIUM" ? "⚠️ " :
+                                         "❓";
+      console.log(`  ${icon} [${result.confidence}] ${finding.name}`);
     }
 
-    if (result.shouldReport) {
-      verified.push({
-        ...result.finding,
-        confidence: result.confidence,
-        // Append confidence to description for transparency
-        description: `${finding.description} [Confidence: ${result.confidence}]`,
-      });
+    if (result.confirmed) {
+      verified.push(result);
     } else {
+      dismissed++;
       if (verbose) {
-        console.log(`     └─ Dismissed — could not confirm on re-check (likely transient)`);
+        console.log(`     └─ Dismissed — not confirmed on re-check (transient or false positive)`);
       }
     }
   }
 
   if (verbose) {
-    const dismissed = findings.length - verified.length;
-    console.log(`  Verification complete: ${verified.length} confirmed, ${dismissed} dismissed as transient\n`);
+    console.log(`  Verification complete: ${verified.length} confirmed, ${dismissed} dismissed\n`);
   }
 
   return verified;

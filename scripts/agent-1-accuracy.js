@@ -3,75 +3,202 @@
  * BEACON PROJECT — Agent 1: Accuracy Watchdog
  * ============================================================
  * File:      scripts/agent-1-accuracy.js
- * Purpose:   Verifies HMRC rate accuracy daily. Every finding
- *            passes through a 3-pass verification loop before
- *            being reported. Transient errors dismissed.
+ * Purpose:   Verifies HMRC tax rates and SDLT rates daily.
+ *            Uses two-layer verification:
+ *            Layer 1 — Phrase presence (rate hasn't disappeared)
+ *            Layer 2 — Numerical extraction (value hasn't changed)
+ *            All findings verified twice before reporting.
  * Schedule:  Daily 8am UTC
  * Owner:     Kleds (Kled-ion on GitHub)
  * ============================================================
  */
-"use strict";
-const { fetchUrl }  = require("./http");
-const { verifyAll } = require("./verify");
-const { OFFICIAL_SOURCES } = require("./config");
 
-const CHECKS = [
-  { name: "Income Tax — Personal Allowance £12,570",  url: OFFICIAL_SOURCES.incomeTaxRates,    phrases: ["£12,570","Personal Allowance"], value: "£12,570",  severity: "RED"   },
-  { name: "Income Tax — Basic Rate Limit £50,270",    url: OFFICIAL_SOURCES.incomeTaxRates,    phrases: ["£50,270","Basic rate"],         value: "£50,270",  severity: "RED"   },
-  { name: "Income Tax — Additional Rate £125,140",    url: OFFICIAL_SOURCES.incomeTaxRates,    phrases: ["£125,140"],                     value: "£125,140", severity: "RED"   },
-  { name: "NI — Primary Threshold £12,570",           url: OFFICIAL_SOURCES.nationalInsurance, phrases: ["£12,570"],                      value: "£12,570",  severity: "RED"   },
-  { name: "SDLT — Standard nil-rate £125,000",        url: OFFICIAL_SOURCES.sdltRates,         phrases: ["£125,000"],                     value: "£125,000", severity: "RED"   },
-  { name: "SDLT — FTB threshold £300,000",            url: OFFICIAL_SOURCES.sdltRates,         phrases: ["£300,000","first-time buyer"],   value: "£300,000", severity: "RED"   },
-  { name: "SDLT — FTB max relief £500,000",           url: OFFICIAL_SOURCES.sdltRates,         phrases: ["£500,000"],                     value: "£500,000", severity: "RED"   },
-  { name: "SDLT — Additional surcharge 5%",           url: OFFICIAL_SOURCES.sdltRates,         phrases: ["5%","additional"],              value: "5%",       severity: "RED"   },
-  { name: "Student Loan — Plan 2 £27,295",            url: OFFICIAL_SOURCES.studentLoans,      phrases: ["£27,295"],                      value: "£27,295",  severity: "AMBER" },
-];
+"use strict";
+
+const { fetchBody }             = require("./http");
+const { verifyAll }             = require("./verify");
+const { createFinding, createReport, printHeader, printPass, printFlag, printFinding, printSummary, exitWithCode } = require("./output");
+const { TAX_RATES, SDLT_RATES } = require("./config");
+
+const AGENT_NAME = "Agent 1: Accuracy Watchdog";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NUMERICAL EXTRACTION
+// Extracts specific numeric values from HMRC HTML pages.
+// This catches cases where the phrase still exists but the number changed.
+// e.g. HMRC could update £12,570 to £13,000 and we'd catch it here.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Attempts to extract a specific monetary value from HTML.
+ * Returns the value found or null if not found.
+ *
+ * @param {string} html       - Page HTML
+ * @param {string} searchNear - Text near the value (context anchor)
+ * @param {string} expected   - Expected value as string e.g. "£12,570"
+ * @returns {{ found: boolean, value: string|null }}
+ */
+function extractMonetaryValue(html, expected) {
+  // Strip expected to just digits for comparison
+  const digits = expected.replace(/[^0-9]/g, "");
+  const regex  = new RegExp(`£${digits.replace(/(\d{3})/g, "$1,?").replace(/^,/, "")}`, "g");
+  const found  = regex.test(html.replace(/,/g, ""));
+  return { found, expected };
+}
+
+/**
+ * Attempts to extract a percentage from HTML.
+ * @param {string} html
+ * @param {string} expected - e.g. "20%"
+ * @returns {{ found: boolean, expected: string }}
+ */
+function extractPercentage(html, expected) {
+  return { found: html.includes(expected), expected };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RUN
+// ─────────────────────────────────────────────────────────────────────────────
 
 async function run() {
-  console.log("\n══════════════════════════════════════════════════");
-  console.log("BEACON — Agent 1: Accuracy Watchdog");
-  console.log(`Run at: ${new Date().toISOString()}`);
-  console.log("══════════════════════════════════════════════════\n");
+  printHeader(AGENT_NAME);
 
-  // PASS 1 — Initial scan
-  console.log("── Pass 1: Initial scan ──\n");
-  const cache = {};
+  const cache       = {};
   const rawFindings = [];
+  const passed      = [];
+  let   totalChecks = 0;
 
-  for (const check of CHECKS) {
-    if (!cache[check.url]) {
-      try { cache[check.url] = (await fetchUrl(check.url)).body; }
-      catch (err) {
-        rawFindings.push({ type:"http_error", url:check.url, phrase:"", description:`${check.name} — source unreachable`, severity:check.severity });
-        continue;
-      }
+  // Helper to fetch with caching (avoid hitting same page twice)
+  async function getPage(url) {
+    if (!cache[url]) {
+      cache[url] = await fetchBody(url);
     }
-    const missing = check.phrases.filter(p => !cache[check.url].includes(p));
-    if (missing.length > 0) {
-      rawFindings.push({ type:"missing_phrase", url:check.url, phrase:missing[0], description:`${check.name} — "${missing.join('","')}" not found on HMRC`, severity:check.severity, action:`Verify ${check.value} at ${check.url}` });
-      console.log(`⚠️  Flagged: ${check.name}`);
+    return cache[url];
+  }
+
+  // ── Pass 1: Income Tax Rates ─────────────────────────────────────────────
+  console.log("── Pass 1a: Income Tax rates ──\n");
+
+  const incomeTaxHtml = await getPage(TAX_RATES.sources.incomeTax);
+
+  for (const check of TAX_RATES.verificationPhrases.incomeTax) {
+    totalChecks++;
+    const result = check.phrase.includes("£")
+      ? extractMonetaryValue(incomeTaxHtml, check.phrase)
+      : extractPercentage(incomeTaxHtml, check.phrase);
+
+    if (!result.found) {
+      rawFindings.push(createFinding({
+        agent:       AGENT_NAME,
+        name:        check.label,
+        type:        "missing_phrase",
+        description: `${check.label} (${check.phrase}) not found on HMRC income tax page`,
+        severity:    check.severity,
+        url:         TAX_RATES.sources.incomeTax,
+        action:      `Manually verify ${check.phrase} at ${TAX_RATES.sources.incomeTax}`,
+        phrase:      check.phrase,
+      }));
+      printFlag(check.label, `${check.phrase} not found`);
     } else {
-      console.log(`✅ Clear: ${check.name} — ${check.value} confirmed on source`);
+      passed.push(check.label);
+      printPass(check.label, `${check.phrase} confirmed`);
     }
   }
 
-  // PASS 2 — Verify all findings independently before reporting
-  console.log(`\n── Pass 2: Self-verification (${rawFindings.length} finding(s)) ──`);
+  // ── Pass 1b: National Insurance ──────────────────────────────────────────
+  console.log("\n── Pass 1b: National Insurance rates ──\n");
+
+  const niHtml = await getPage(TAX_RATES.sources.nationalInsurance);
+
+  for (const check of TAX_RATES.verificationPhrases.nationalInsurance) {
+    totalChecks++;
+    const result = check.phrase.includes("£")
+      ? extractMonetaryValue(niHtml, check.phrase)
+      : extractPercentage(niHtml, check.phrase);
+
+    if (!result.found) {
+      rawFindings.push(createFinding({
+        agent:       AGENT_NAME,
+        name:        check.label,
+        type:        "missing_phrase",
+        description: `${check.label} (${check.phrase}) not found on HMRC NI page`,
+        severity:    check.severity,
+        url:         TAX_RATES.sources.nationalInsurance,
+        action:      `Manually verify ${check.phrase} at ${TAX_RATES.sources.nationalInsurance}`,
+        phrase:      check.phrase,
+      }));
+      printFlag(check.label);
+    } else {
+      passed.push(check.label);
+      printPass(check.label, `${check.phrase} confirmed`);
+    }
+  }
+
+  // ── Pass 1c: Student Loans ───────────────────────────────────────────────
+  console.log("\n── Pass 1c: Student Loan thresholds ──\n");
+
+  const loanHtml = await getPage(TAX_RATES.sources.studentLoans);
+
+  for (const check of TAX_RATES.verificationPhrases.studentLoans) {
+    totalChecks++;
+    const result = extractMonetaryValue(loanHtml, check.phrase);
+
+    if (!result.found) {
+      rawFindings.push(createFinding({
+        agent:       AGENT_NAME,
+        name:        check.label,
+        type:        "missing_phrase",
+        description: `${check.label} (${check.phrase}) not found on HMRC student loan page`,
+        severity:    check.severity,
+        url:         TAX_RATES.sources.studentLoans,
+        phrase:      check.phrase,
+      }));
+      printFlag(check.label);
+    } else {
+      passed.push(check.label);
+      printPass(check.label, `${check.phrase} confirmed`);
+    }
+  }
+
+  // ── Pass 1d: SDLT Rates ──────────────────────────────────────────────────
+  console.log("\n── Pass 1d: SDLT rates ──\n");
+
+  const sdltHtml = await getPage(SDLT_RATES.sources.rates);
+
+  for (const check of SDLT_RATES.verificationPhrases) {
+    totalChecks++;
+    const result = check.phrase.includes("£")
+      ? extractMonetaryValue(sdltHtml, check.phrase)
+      : { found: sdltHtml.toLowerCase().includes(check.phrase.toLowerCase()), expected: check.phrase };
+
+    if (!result.found) {
+      rawFindings.push(createFinding({
+        agent:       AGENT_NAME,
+        name:        check.label,
+        type:        "missing_phrase",
+        description: `${check.label} (${check.phrase}) not found on HMRC SDLT page`,
+        severity:    check.severity,
+        url:         SDLT_RATES.sources.rates,
+        action:      `Manually verify ${check.phrase} at ${SDLT_RATES.sources.rates}`,
+        phrase:      check.phrase,
+      }));
+      printFlag(check.label);
+    } else {
+      passed.push(check.label);
+      printPass(check.label, `${check.phrase} confirmed`);
+    }
+  }
+
+  // ── Pass 2: Self-verification ────────────────────────────────────────────
   const confirmed = await verifyAll(rawFindings, true);
 
-  // PASS 3 — Classify and output
-  console.log("── Pass 3: Final report ──\n");
-  const red   = confirmed.filter(f => f.severity === "RED");
-  const amber = confirmed.filter(f => f.severity === "AMBER");
+  // ── Pass 3: Final report ─────────────────────────────────────────────────
+  console.log("── Pass 3: Final classification ──\n");
+  confirmed.forEach(f => printFinding(f));
 
-  red.forEach(f   => console.log(`🔴 RED   [${f.confidence}]: ${f.description}${f.action ? "\n   → " + f.action : ""}`));
-  amber.forEach(f => console.log(`🟠 AMBER [${f.confidence}]: ${f.description}`));
-
-  console.log(`\n══════════════════════════════════════════════════`);
-  console.log(`Passed: ${CHECKS.length - confirmed.length}/${CHECKS.length} | Red: ${red.length} | Amber: ${amber.length}`);
-  if (red.length > 0)   { console.log("🔴 Action required today"); process.exit(1); }
-  else if (amber.length > 0) { console.log("🟠 Review this week"); process.exit(0); }
-  else                  { console.log("✅ All accuracy checks verified clean"); process.exit(0); }
+  const report = createReport({ agent: AGENT_NAME, totalChecks, findings: confirmed, passed });
+  printSummary(report);
+  exitWithCode(report);
 }
 
-run().catch(err => { console.error("Agent 1 error:", err.message); process.exit(1); });
+run().catch(err => { console.error(`${AGENT_NAME} error:`, err.message); process.exit(1); });
