@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.firsthomeguide.co.uk/sitemap.xml
+Sitemap: https://www.ukfirsthomeguide.co.uk/sitemap.xml
